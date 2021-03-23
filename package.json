@@ -1,0 +1,25 @@
+{
+  "name": "deversifi",
+  "version": "1.0.0",
+  "description": "DeversiFi engineering assessment",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "(npm --prefix ./client install ./client) && (npm --prefix ./server install ./server)",
+    "start": "concurrently --kill-others \"npm --prefix ./client run dev\" \"npm --prefix ./server run start\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HPaulowicz/deversifi.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/HPaulowicz/deversifi/issues"
+  },
+  "homepage": "https://github.com/HPaulowicz/deversifi#readme",
+  "devDependencies": {
+    "concurrently": "^6.0.0"
+  }
+}

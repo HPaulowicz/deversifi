@@ -1,0 +1,6 @@
+node_modules
+npm-debug.log
+.vscode
+mysql-data
+*.pem
+local.json
