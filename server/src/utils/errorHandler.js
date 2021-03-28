@@ -1,4 +1,3 @@
-
 class ValidationError extends Error {
     constructor(message) {
         super(message);
@@ -6,22 +5,14 @@ class ValidationError extends Error {
     }
 }
 
-class NotFoundError extends Error {
-    constructor(message = 'not_found') {
+class AuthenticationError extends Error {
+    constructor(message = 'authentication_failed') {
         super(message);
-        this.statusCode = 404;
-    }
-}
-
-class NotAllowedError extends Error {
-    constructor(message = 'not_allowed') {
-        super(message);
-        this.statusCode = 405;
+        this.statusCode = 403;
     }
 }
 
 module.exports = {
     ValidationError,
-    NotFoundError,
-    NotAllowedError,
+    AuthenticationError,
 }

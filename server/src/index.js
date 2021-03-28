@@ -1,9 +1,12 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const httpContext = require('express-http-context');
 
 const RouteHandler = require('./utils/RouteHandler');
 const OrderController = require('./controllers/OrderController');
+
+const AuthenticationMiddleware = require('./middleware/AuthenticationMiddleware');
 
 const app = express();
 const routeHandler = new RouteHandler();
@@ -12,6 +15,15 @@ const routeHandler = new RouteHandler();
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(httpContext.middleware);
+
+app.use((req, res, next) => {
+    httpContext.ns.bindEmitter(req);
+    httpContext.ns.bindEmitter(res);
+    next();
+});
+
+app.use(routeHandler.middleware(async (req, res, next) => await AuthenticationMiddleware.authenticate(req, res, next)));
 
 /**
  * The back end should expose the following REST endpoints:
@@ -22,10 +34,10 @@ app.use(bodyParser.urlencoded({ extended: true }));
  * getOrdersForUser  : takes user ID and returns order IDs that are currently on the orderbook
  */
 
-// app.post('/placeOrder', routeHandler.route((req, res) => new OrderController(req, res).order()));
-// app.delete('/cancelOrder', routeHandler.route((req, res) => new OrderController(req, res).order()));
-app.get('/getOrderbook', routeHandler.route((req, res) => OrderController.getOrderBook(req, res)));
-// app.get('/getOrdersForUser', routeHandler.route((req, res) => new OrderController(req, res).orders()));
+app.post('/placeOrder', routeHandler.route((req, res) => new OrderController().placeOrder(req, res)));
+app.post('/cancelOrder', routeHandler.route((req, res) => new OrderController().cancelOrder(req, res)));
+app.get('/getOrderbook', routeHandler.route((req, res) => new OrderController().getOrderBook(req, res)));
+app.get('/getOrdersForUser', routeHandler.route((req, res) => new OrderController().getOrdersForUser(req, res)));
 
 /**
  * Error Handler

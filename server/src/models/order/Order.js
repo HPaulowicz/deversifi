@@ -1,4 +1,8 @@
+const shortid = require('shortid');
 const data = require('../../data/btcusd.json');
+const DB = require('../../data/DB');
+
+const { ValidationError, AuthenticationError } = require('../../utils/errorHandler');
 
 class Order {
     static getOrderBook() {
@@ -8,6 +12,17 @@ class Order {
                 bids,
             }
         } = data;
+
+        const localAsks = DB.orders.filter(({ side }) => side === 'ask');
+        const localBids = DB.orders.filter(({ side }) => side === 'bid');
+
+        if (localAsks.length) {
+            asks.push(...localAsks.map(({ price, amount }) => [price, amount]));
+        }
+
+        if (localBids.length) {
+            asks.push(...localBids.map(({ price, amount }) => [price, amount]));
+        }
 
         /**
          * The result structure must have the following data:
@@ -63,6 +78,39 @@ class Order {
         };
         
         return structure;
+    }
+
+    static getOrdersForUser(userID) {
+        return DB.orders.filter((order) => order.userID === userID);
+    }
+
+    static placeOrder(userID, amount, price, side) {
+        const orderID = shortid();
+        DB.orders.push({ userID, amount, price, side, orderID });
+
+        console.log(`PLACED [SIDE: ${side}] @ [PRICE: ${price}] [AMOUNT: ${amount}]`);
+
+        return { orderID };
+    }
+
+    static cancelOrder(userID, orderID) {
+        const [ order ] = DB.orders.filter((order) => order.orderID === orderID);
+
+        if (!order) {
+            throw new ValidationError('order_does_not_exist');
+        }
+
+        if (order.userID !== userID) {
+            throw new AuthenticationError();
+        }
+
+        DB.orders = DB.orders.filter((order) => order.orderID !== orderID);
+
+        const { amount, price, side } = order;
+
+        console.log(`CANCELLED [SIDE: ${side}] @ [PRICE: ${price}] [AMOUNT: ${amount}]`)
+
+        return { status: true }
     }
 }
 
