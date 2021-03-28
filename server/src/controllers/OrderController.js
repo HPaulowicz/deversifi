@@ -1,5 +1,5 @@
 const Controller = require('./Controller');
-const { ValidationError } = require('../../utils/errorHandler');
+const { ValidationError } = require('../utils/errorHandler');
 const Order = require('../models/order/Order')
 
 
