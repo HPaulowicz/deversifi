@@ -1,0 +1,142 @@
+{
+	"info": {
+		"_postman_id": "e73c67fb-dafb-4b10-8056-659def6d4264",
+		"name": "Deversifi",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "getOrderbook",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{\"userID\": 1}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "localhost:8000/getOrderbook",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"getOrderbook"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "placeOrder",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{\"userID\": 1}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"side\": \"ask\",\n\t\"amount\": 2.44,\n\t\"price\": 54562\n}"
+				},
+				"url": {
+					"raw": "localhost:8000/placeOrder",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"placeOrder"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cancelOrder",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{\"userID\": 1}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"orderID\": \"BN-9l3swr\"\n}"
+				},
+				"url": {
+					"raw": "localhost:8000/cancelOrder",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"cancelOrder"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getOrdersForUser",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{\"userID\": 1}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "localhost:8000/getOrdersForUser",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"getOrdersForUser"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
