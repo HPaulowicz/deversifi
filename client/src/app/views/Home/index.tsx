@@ -1,7 +1,6 @@
 import React from 'react';
 import { RouteComponentProps } from 'react-router-dom';
-import { message, Button, Typography, Space, Input, Spin, Form, Table, Tag } from 'antd';
-import { MenuOutlined, CloseOutlined, DownloadOutlined, PieChartTwoTone } from '@ant-design/icons';
+import { message, Button, Typography, Space, Input, Spin, Table, Tag, Popconfirm } from 'antd';
 
 import './style.less';
 
@@ -22,16 +21,6 @@ interface IOrderbook {
         total: number,
     }[],
 };
-
-interface ICancelOrder {
-    orderID: string,
-}
-
-interface IPlacedOrder {
-    side: "ask" | "bid",
-    amount: number,
-    price: number,
-}
 
 interface IPlaceOrderResponse {
     orderID: string,
@@ -58,6 +47,9 @@ interface IState {
     userOrdersLoading: boolean,
     orderBook?: IOrderbook,
     userOrders: IOrdersForUser[],
+    amount?: number | string,
+    price?: number | string,
+    side?: 'ask' | 'bid',
 };
 
 class Home extends React.Component<IProps, IState> {
@@ -92,7 +84,7 @@ class Home extends React.Component<IProps, IState> {
             (result: IOrderbook) => {
                 this.setState({
                     orderBookLoading: false,
-                    orderBook: result
+                    orderBook: result,
                 });
             },
             (error) => {
@@ -160,8 +152,51 @@ class Home extends React.Component<IProps, IState> {
         );
     }
 
+    placeOrder() {
+        const { userID, amount, price, side } = this.state;
+        this.setState({ orderPlaceLoading: true });
+
+        fetch('http://localhost:8000/placeOrder', {
+            method: 'POST',
+            headers: {
+                'Authorization': JSON.stringify({ userID }),
+                'Accept': 'application/json, text/plain, */*',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                side: side,
+                amount: Number.parseFloat(amount as string),
+                price: Number.parseFloat(price as string),
+            }),
+        }).then(res => res.json()).then(
+            (result: IPlaceOrderResponse) => {
+                this.setState({
+                    orderPlaceLoading: false,
+                });
+                if (result && result.orderID) {
+                    message.success(`Order ${result.orderID} have been placed`);
+                    this.loadUserOrders();
+                    this.loadOrderBook();
+                }
+            },
+            (error) => {
+                this.setState({
+                    orderPlaceLoading: false,
+                });
+                message.error(error);
+            }
+        );
+    }
+
     setUserID(userID: string | number) {
         this.setState({ userID });
+    }
+
+    prepareOrder(side: 'ask' | 'bid') {
+        const { orderBook } = this.state;
+        const firstRow = (side === 'ask') ? orderBook?.asks[0] : orderBook?.bids[0];
+        const { amount, price } = firstRow || { amount: 0, price: 0 };
+        this.setState({ amount, price, side });
     }
 
     renderUserOrders() {
@@ -183,7 +218,7 @@ class Home extends React.Component<IProps, IState> {
             title: 'Buy / Sell',
             dataIndex: 'side',
             key: 'side',
-            render: (_: unknown, record: IOrdersForUser) => record.side === 'ask' ? <Tag color='#f50'>ASK</Tag> : <Tag color='#87d068'>BID</Tag>,
+            render: (_: unknown, record: IOrdersForUser) => record.side === 'ask' ? <Tag color='#87d068'>BUY</Tag> : <Tag color='#f50'>SELL</Tag>,
         }, {
             title: 'Action',
             key: 'action',
@@ -192,10 +227,10 @@ class Home extends React.Component<IProps, IState> {
                     loading={orderCancelLoading}
                     danger
                     onClick={() => this.cancelOrder(record.orderID)}>
-                        Cancel order
+                    Cancel order
                 </Button>
             ),
-          }];
+        }];
         return (
             <Table columns={columns} dataSource={userOrders} loading={userOrdersLoading} />
         );
@@ -244,29 +279,16 @@ class Home extends React.Component<IProps, IState> {
 
     renderOrderForm() {
         return (
-            <Form
-                name="basic"
-                initialValues={{ remember: true }}
-                onFinish={()=> {}}
-                onFinishFailed={()=> {}}
-            >
-                <Form.Item
-                    label="Username"
-                    name="username"
-                    rules={[{ required: true, message: 'Please input your username!' }]}
-                >
-                    <Input />
-                </Form.Item>
-
-                <Form.Item>
-                    <Button type="primary" htmlType="submit">Submit</Button>
-                </Form.Item>
-            </Form>
+            <Input.Group compact>
+                <Input style={{ width: 100, textAlign: 'center' }} placeholder="amount" value={this.state.amount} onChange={(e) => this.setState({ amount: e.currentTarget.value })} />
+                <Input style={{ width: 100, textAlign: 'center' }} placeholder="price" value={this.state.price} onChange={(e) => this.setState({ price: e.currentTarget.value })} />
+            </Input.Group>
         );
     }
 
     render() {
         const { userID } = this.state;
+
         return (
             <Space direction='vertical'>
                 <Space>
@@ -278,8 +300,16 @@ class Home extends React.Component<IProps, IState> {
                     {this.renderUserOrders()}
                 </Space>
                 <Space direction='horizontal'>
-                    <Button size='large' type='primary'>Buy</Button>
-                    <Button size='large' type='primary' danger>Sell</Button>
+                    <Popconfirm
+                        title={this.renderOrderForm()}
+                        onConfirm={() => this.placeOrder()}
+                        onCancel={() => this.setState({ amount: undefined, price: undefined, side: undefined })}
+                        okText='Confirm'
+                        cancelText='Cancel'
+                    >
+                        <Button type='primary' size='large' onClick={() => this.prepareOrder('ask')}>Buy</Button>
+                        <Button type='primary' size='large' danger onClick={() => this.prepareOrder('bid')}>Sell</Button>
+                    </Popconfirm>
                 </Space>
                 <Space direction='vertical'>
                     {this.renderOrderBook()}
