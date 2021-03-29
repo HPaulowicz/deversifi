@@ -4,6 +4,12 @@ const DB = require('../../data/DB');
 
 const { ValidationError, AuthenticationError } = require('../../utils/errorHandler');
 
+const round = (num, decimalPlaces = 0) => {
+    var p = Math.pow(10, decimalPlaces);
+    var m = (num * p) * (1 + Number.EPSILON);
+    return Math.round(m) / p;
+};
+
 class Order {
     static getOrderBook() {
         const { 
@@ -64,10 +70,10 @@ class Order {
             for (let i = 0; i < sorted.length; i += 1) {
                 const { price, count, amount } = sorted[i];
                 if (i === 0) {
-                    result.push({ price, count, amount, total: amount });
+                    result.push({ price, count, amount: round(amount, 5), total: round(amount, 5) });
                     continue;
                 }
-                result.push({ price, count, amount, total: amount + result[i - 1].total });
+                result.push({ price, count, amount: round(amount, 5), total: round(amount + result[i - 1].total, 5) });
             }
             return result;
         };
