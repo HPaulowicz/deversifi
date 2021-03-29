@@ -27,7 +27,7 @@ class Order {
         }
 
         if (localBids.length) {
-            asks.push(...localBids.map(({ price, amount }) => [price, amount]));
+            bids.push(...localBids.map(({ price, amount }) => [price, amount]));
         }
 
         /**
